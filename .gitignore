@@ -8,3 +8,7 @@ node_modules/
 coverage/
 artifacts/
 agent.db
+test_agent.db
+apps/desktop/Memento.exe
+apps/desktop/src-tauri/target/
+apps/web/out/

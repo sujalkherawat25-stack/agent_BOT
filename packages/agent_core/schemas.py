@@ -42,3 +42,16 @@ class CreateReminderRequest(BaseModel):
     trigger_at: datetime
     timezone: str = "UTC"
     idempotency_key: str | None = None
+
+
+class AgentSettingsRequest(BaseModel):
+    provider: str = Field(default="xai", min_length=1, max_length=40)
+    base_url: str = Field(default="https://api.x.ai/v1", min_length=8, max_length=500)
+    fast_model: str = Field(default="grok-4.1-fast", min_length=1, max_length=120)
+    balanced_model: str = Field(default="grok-4.1-fast", min_length=1, max_length=120)
+    strong_model: str = Field(default="grok-4.6", min_length=1, max_length=120)
+    tools: dict[str, bool] = Field(default_factory=lambda: {"reminders": True, "tasks": True, "research": False, "memory": False})
+
+
+class AgentSettingsView(AgentSettingsRequest):
+    api_key_configured: bool = False

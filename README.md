@@ -17,13 +17,15 @@ Copy-Item .env.example .env
 docker compose up --build
 ```
 
-Open http://localhost:3000. The API docs are at http://localhost:8000/docs.
+Open http://localhost:3000 for the browser preview, or use the lightweight native control app in `apps/desktop`. The API docs are at http://localhost:8000/docs.
 
 To use xAI, add `XAI_API_KEY` to `.env`; provider calls remain isolated in `packages/models/`.
 
 ## Architecture
 
 `apps/api` is the HTTP boundary. `packages/agent_core` owns routing and execution, `packages/harnesses/productivity` owns deterministic productivity intent and mutations, `packages/models` owns provider adapters, and `packages/storage` owns operational state. Semantic memory is deliberately not used as task/reminder state.
+
+`apps/desktop` is a Tauri 2 Windows shell: it uses the system WebView rather than Electron, presents a Codex-style workspace, and keeps provider secrets in Windows Credential Manager.
 
 ## Next slices
 

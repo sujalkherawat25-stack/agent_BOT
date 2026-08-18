@@ -29,7 +29,7 @@ services:
       context: .
       dockerfile: apps/web/Dockerfile
     environment: {NEXT_PUBLIC_API_URL: http://localhost:8000}
-    ports: ["3000:3000"]
+    ports: ["3000:80"]
     depends_on: [api]
 volumes:
   postgres_data:

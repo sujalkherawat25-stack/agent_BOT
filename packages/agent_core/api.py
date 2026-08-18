@@ -9,10 +9,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from agent_core.events import stream
 from agent_core.router import route
-from agent_core.schemas import ChatMessageRequest, CreateReminderRequest, ReminderView
+from agent_core.schemas import AgentSettingsRequest, AgentSettingsView, ChatMessageRequest, CreateReminderRequest, ReminderView
 from harnesses.productivity.intent import parse_reminder
 from harnesses.productivity.service import create_and_verify_reminder
-from storage.db import AgentRunRow, AuditEventRow, ConversationRow, MessageRow, ReminderRow, UserRow, session
+from storage.db import AgentRunRow, AgentSettingsRow, AuditEventRow, ConversationRow, MessageRow, ReminderRow, UserRow, session
 
 router = APIRouter()
 
@@ -31,6 +31,35 @@ async def user_for(session: AsyncSession, user_id: str | None, timezone_name: st
 @router.get("/health")
 async def health() -> dict:
     return {"ok": True, "service": "personal-agent", "version": "0.1.0"}
+
+
+def settings_view(value: AgentSettingsRow | None) -> AgentSettingsView:
+    if value is None:
+        return AgentSettingsView()
+    return AgentSettingsView(provider=value.provider, base_url=value.base_url, fast_model=value.fast_model, balanced_model=value.balanced_model, strong_model=value.strong_model, tools=value.tools_json)
+
+
+@router.get("/settings", response_model=AgentSettingsView)
+async def get_settings(user_id: str, db: AsyncSession = Depends(session)):
+    return settings_view(await db.get(AgentSettingsRow, user_id))
+
+
+@router.put("/settings", response_model=AgentSettingsView)
+async def put_settings(request: AgentSettingsRequest, user_id: str, timezone_name: str = "UTC", db: AsyncSession = Depends(session)):
+    user = await user_for(db, user_id, timezone_name)
+    value = await db.get(AgentSettingsRow, user.id)
+    if value is None:
+        value = AgentSettingsRow(user_id=user.id)
+        db.add(value)
+    value.provider = request.provider
+    value.base_url = request.base_url
+    value.fast_model = request.fast_model
+    value.balanced_model = request.balanced_model
+    value.strong_model = request.strong_model
+    value.tools_json = request.tools
+    db.add(AuditEventRow(user_id=user.id, run_id=None, event_type="SETTINGS_UPDATED", payload_json={"provider": request.provider, "tools": request.tools}))
+    await db.commit()
+    return settings_view(value)
 
 
 @router.post("/chat/messages")

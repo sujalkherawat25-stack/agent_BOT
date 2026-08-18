@@ -2,6 +2,6 @@
   "name": "personal-agent-web",
   "private": true,
   "scripts": {"dev": "next dev", "build": "next build", "start": "next start", "lint": "next lint"},
-  "dependencies": {"next": "15.5.2", "react": "19.1.1", "react-dom": "19.1.1"},
+  "dependencies": {"@tauri-apps/api": "^2.8.0", "next": "15.5.9", "react": "19.1.1", "react-dom": "19.1.1"},
   "devDependencies": {"@types/node": "22.15.30", "@types/react": "19.1.10", "typescript": "5.8.3"}
 }

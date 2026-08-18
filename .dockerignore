@@ -1,0 +1,10 @@
+.git
+.env
+.venv
+**/node_modules
+**/.next
+**/out
+**/target
+**/.pytest_cache
+agent.db
+test_agent.db

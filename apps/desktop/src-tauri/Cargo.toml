@@ -1,0 +1,18 @@
+[package]
+name = "memento-desktop"
+version = "0.1.0"
+description = "A lightweight local control plane for Personal Agent"
+authors = ["Sujal"]
+edition = "2021"
+
+[lib]
+name = "memento_desktop_lib"
+crate-type = ["cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+keyring = "3"
+serde = { version = "1", features = ["derive"] }

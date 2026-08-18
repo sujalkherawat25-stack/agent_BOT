@@ -82,6 +82,18 @@ class AuditEventRow(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
+class AgentSettingsRow(Base):
+    __tablename__ = "agent_settings"
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    provider: Mapped[str] = mapped_column(String(40), default="xai")
+    base_url: Mapped[str] = mapped_column(String(500), default="https://api.x.ai/v1")
+    fast_model: Mapped[str] = mapped_column(String(120), default="grok-4.1-fast")
+    balanced_model: Mapped[str] = mapped_column(String(120), default="grok-4.1-fast")
+    strong_model: Mapped[str] = mapped_column(String(120), default="grok-4.6")
+    tools_json: Mapped[dict] = mapped_column(JSON, default=lambda: {"reminders": True, "tasks": True, "research": False, "memory": False})
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+
 engine = create_async_engine(settings.database_url, future=True)
 SessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 

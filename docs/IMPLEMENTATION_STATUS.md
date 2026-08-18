@@ -9,6 +9,12 @@ The attached implementation specification is the architectural contract. It expl
 - First Phase 2 vertical slice: deterministic reminder intent, timezone conversion, idempotency, durable persistence, postcondition read verification, user-legible SSE activity, and reminder UI confirmation.
 - xAI integration boundary: `packages/models/xai_provider.py` owns the Responses API call; no harness imports a provider SDK or provider-specific response type.
 
+## Desktop control plane
+
+- `apps/desktop` is a Tauri 2 Windows app, using the system WebView rather than an Electron-bundled Chromium runtime.
+- Its Codex-style workspace includes chat, tools, research/task placeholders, runtime state, and a full settings screen for local API endpoint, provider, model profiles, and tool enablement.
+- Non-secret settings persist in the local API. API keys stay out of the database and browser storage; the native app writes them to Windows Credential Manager.
+
 ## Deliberately deferred
 
 The remaining phases require their own complete slices and evals: full task CRUD + worker/scheduler, Syntarus adapter, research evidence/claim ledgers, daily planning, calendar integration, and developer-authored skills. They are not represented by empty fake modules, per the specification’s implementation rules.
