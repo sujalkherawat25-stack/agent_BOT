@@ -16,10 +16,13 @@ The attached implementation specification is the architectural contract. It expl
 - Non-secret settings persist in the local API. API keys stay out of the database and browser storage; the native app writes them to Windows Credential Manager.
 - The desktop now starts and owns a local `agentd` process on `127.0.0.1:8765`; Docker is optional server/development infrastructure rather than a desktop startup dependency.
 - Provider calls use the configured OpenAI-compatible endpoint and require the explicit `external_requests` permission in Settings.
+- Task CRUD is live at `/v1/tasks`; the API lifespan runs a five-second local worker that advances due tasks to `in_progress`.
+- Memory CRUD is live at `/v1/memory`; memory write-back is opt-in through the Memory tool permission. Memory is not automatically sent to an external provider without a separate explicit context-consent design.
+- Research is live at `/v1/research` for user-supplied URLs: it verifies HTTP responses, hashes retrieved content, stores source rows and evidence claims, and returns citations.
 
 ## Deliberately deferred
 
-The remaining phases require their own complete slices and evals: full task CRUD + worker/scheduler, Syntarus adapter, research evidence/claim ledgers, daily planning, calendar integration, and developer-authored skills. They are not represented by empty fake modules, per the specification’s implementation rules.
+The remaining phases require their own complete slices and evals: provider-specific search adapters, LLM evidence synthesis, daily planning, calendar integration, and developer-authored skills/MCP tools.
 
 ## Verification
 

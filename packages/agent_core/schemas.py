@@ -44,6 +44,59 @@ class CreateReminderRequest(BaseModel):
     idempotency_key: str | None = None
 
 
+class TaskCreateRequest(BaseModel):
+    title: str = Field(min_length=1, max_length=300)
+    description: str | None = Field(default=None, max_length=4000)
+    priority: Literal["low", "normal", "high"] = "normal"
+    due_at: datetime | None = None
+
+
+class TaskUpdateRequest(BaseModel):
+    title: str | None = Field(default=None, min_length=1, max_length=300)
+    description: str | None = Field(default=None, max_length=4000)
+    priority: Literal["low", "normal", "high"] | None = None
+    status: Literal["open", "in_progress", "done", "cancelled"] | None = None
+    due_at: datetime | None = None
+
+
+class TaskView(TaskCreateRequest):
+    id: str
+    user_id: str
+    status: str
+    created_at: datetime
+    updated_at: datetime
+    completed_at: datetime | None = None
+
+
+class MemoryCreateRequest(BaseModel):
+    content: str = Field(min_length=1, max_length=2000)
+    importance: int = Field(default=1, ge=1, le=5)
+
+
+class MemoryView(MemoryCreateRequest):
+    id: str
+    created_at: datetime
+
+
+class ResearchRequest(BaseModel):
+    query: str = Field(min_length=3, max_length=1000)
+    urls: list[str] = Field(min_length=1, max_length=10)
+
+
+class ResearchCitation(BaseModel):
+    source_id: str
+    title: str | None
+    url: str
+    verified: bool
+    snippet: str | None
+
+
+class ResearchResponse(BaseModel):
+    query: str
+    summary: str
+    citations: list[ResearchCitation]
+
+
 class AgentSettingsRequest(BaseModel):
     provider: str = Field(default="xai", min_length=1, max_length=40)
     base_url: str = Field(default="https://api.x.ai/v1", min_length=8, max_length=500)

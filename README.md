@@ -8,6 +8,7 @@ An evidence-first, safety-gated personal AI agent. This repository implements th
 - Durable Postgres models for users, conversations, messages, runs, reminders, tasks, audit events, and approvals.
 - Deterministic reminder intent parsing, timezone-aware scheduling, idempotency, postcondition verification, and user-legible SSE activity.
 - Provider-neutral model boundary plus OpenAI-compatible and xAI adapters. Provider requests are blocked until explicitly enabled in Settings.
+- Durable task CRUD with a local background worker, explicit-URL research verification with citations/evidence ledger, and local memory CRUD/write-back.
 - Next.js workspace UI, Docker Compose, unit/integration tests, and GitHub Actions CI.
 
 ## Run the desktop app (normal mode)
@@ -42,4 +43,4 @@ To use xAI, add `XAI_API_KEY` to `.env`; provider calls remain isolated in `pack
 
 ## Next slices
 
-The repository is intentionally a complete initial vertical slice rather than empty scaffolding for every future phase. The next implementation order is task CRUD/scheduler worker, then the Syntarus adapter, then the evidence-ledger research harness.
+Research accepts user-supplied URLs and records verified source hashes and evidence claims; it does not silently search or contact arbitrary domains. The next slices are provider-specific search adapters, LLM evidence synthesis, skills/MCP, and external task actions.
