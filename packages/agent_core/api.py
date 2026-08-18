@@ -111,6 +111,12 @@ async def post_message(request: ChatMessageRequest, db: AsyncSession = Depends(s
             db.add(AuditEventRow(user_id=user.id, run_id=run.id, event_type="RUN_FAILED", payload_json={"reason": str(error)}))
             await db.commit()
             events.extend([( "run.failed", {"status": "failed", "label": str(error)}), ("token", {"text": str(error)})])
+    elif decision.mode in {"RESEARCH", "MEMORY_LOOKUP"}:
+        answer = "This capability is not enabled yet. Research and memory tools need their evidence and storage harnesses configured before I can answer reliably."
+        run.status, run.completed_at = "completed", datetime.now(timezone.utc)
+        db.add(MessageRow(conversation_id=conversation.id, role="assistant", content=answer))
+        await db.commit()
+        events.extend([("token", {"text": answer}), ("run.completed", {"status": "completed"})])
     else:
         try:
             answer = await model_answer(request.message, preferences)
