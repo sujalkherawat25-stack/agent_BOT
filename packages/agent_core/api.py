@@ -75,7 +75,15 @@ async def post_message(request: ChatMessageRequest, db: AsyncSession = Depends(s
     db.add_all([MessageRow(conversation_id=conversation.id, role="user", content=request.message), run, AuditEventRow(user_id=user.id, run_id=run.id, event_type="USER_MESSAGE_RECEIVED", payload_json={})])
     await db.flush()
     events: list[tuple[str, dict]] = [("run.started", {"status": "routing", "label": "Understanding request…"}), ("run.status_changed", {"status": "working", "label": "Preparing a safe action…"})]
-    if decision.mode == "PRODUCTIVITY":
+    preferences = await db.get(AgentSettingsRow, user.id)
+    reminder_enabled = preferences is None or preferences.tools_json.get("reminders", True)
+    if decision.mode == "PRODUCTIVITY" and not reminder_enabled:
+        answer = "Reminders are disabled in Settings, so I did not create anything. Enable Reminders in Tools to allow this action."
+        run.status, run.completed_at = "completed", datetime.now(timezone.utc)
+        db.add(MessageRow(conversation_id=conversation.id, role="assistant", content=answer))
+        await db.commit()
+        events.extend([("token", {"text": answer}), ("run.completed", {"status": "completed"})])
+    elif decision.mode == "PRODUCTIVITY":
         try:
             intent = parse_reminder(request.message, user.timezone)
             reminder = await create_and_verify_reminder(db, user_id=user.id, run=run, message=intent.title, trigger_at=intent.trigger_at, tz=intent.timezone)
@@ -106,6 +114,9 @@ async def list_reminders(user_id: str, db: AsyncSession = Depends(session)):
 @router.post("/reminders", response_model=ReminderView)
 async def create_reminder(request: CreateReminderRequest, user_id: str, db: AsyncSession = Depends(session)):
     user = await user_for(db, user_id, request.timezone)
+    preferences = await db.get(AgentSettingsRow, user.id)
+    if preferences is not None and not preferences.tools_json.get("reminders", True):
+        raise HTTPException(403, "Reminders are disabled in Settings")
     run = AgentRunRow(user_id=user.id, conversation_id=(await ensure_conversation(db, user.id)).id, goal=request.message, mode="productivity", status="running")
     db.add(run); await db.flush()
     reminder = await create_and_verify_reminder(db, user_id=user.id, run=run, message=request.message, trigger_at=request.trigger_at, tz=request.timezone)
