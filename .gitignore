@@ -10,5 +10,7 @@ artifacts/
 agent.db
 test_agent.db
 apps/desktop/Memento.exe
+apps/desktop/agentd.exe
+apps/desktop/src-tauri/binaries/
 apps/desktop/src-tauri/target/
 apps/web/out/

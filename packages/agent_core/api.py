@@ -14,6 +14,7 @@ from harnesses.productivity.intent import parse_reminder
 from harnesses.productivity.service import create_and_verify_reminder
 from models.base import ModelRequest
 from models.openai_compatible import OpenAICompatibleProvider
+from models.anthropic_provider import AnthropicProvider
 from models.secrets import provider_secret
 from storage.db import AgentRunRow, AgentSettingsRow, AuditEventRow, ConversationRow, MessageRow, ReminderRow, UserRow, session
 
@@ -36,15 +37,15 @@ async def health() -> dict:
     return {"ok": True, "service": "personal-agent", "version": "0.1.0"}
 
 
-def settings_view(value: AgentSettingsRow | None) -> AgentSettingsView:
+async def settings_view(value: AgentSettingsRow | None) -> AgentSettingsView:
     if value is None:
         return AgentSettingsView()
-    return AgentSettingsView(provider=value.provider, base_url=value.base_url, fast_model=value.fast_model, balanced_model=value.balanced_model, strong_model=value.strong_model, tools=value.tools_json)
+    return AgentSettingsView(provider=value.provider, base_url=value.base_url, fast_model=value.fast_model, balanced_model=value.balanced_model, strong_model=value.strong_model, tools=value.tools_json, api_key_configured=bool(provider_secret(value.provider)))
 
 
 @router.get("/settings", response_model=AgentSettingsView)
 async def get_settings(user_id: str, db: AsyncSession = Depends(session)):
-    return settings_view(await db.get(AgentSettingsRow, user_id))
+    return await settings_view(await db.get(AgentSettingsRow, user_id))
 
 
 @router.put("/settings", response_model=AgentSettingsView)
@@ -62,7 +63,7 @@ async def put_settings(request: AgentSettingsRequest, user_id: str, timezone_nam
     value.tools_json = request.tools
     db.add(AuditEventRow(user_id=user.id, run_id=None, event_type="SETTINGS_UPDATED", payload_json={"provider": request.provider, "tools": request.tools}))
     await db.commit()
-    return settings_view(value)
+    return await settings_view(value)
 
 
 async def model_answer(message: str, preferences: AgentSettingsRow | None) -> str:
@@ -71,7 +72,7 @@ async def model_answer(message: str, preferences: AgentSettingsRow | None) -> st
     secret = provider_secret(preferences.provider)
     if not secret and preferences.provider not in {"local", "ollama"}:
         return "No API key is configured for this provider. Add it in Settings, then try again."
-    provider = OpenAICompatibleProvider(preferences.base_url, secret or "local", preferences.strong_model)
+    provider = AnthropicProvider(preferences.base_url, secret, preferences.strong_model) if preferences.provider == "anthropic" else OpenAICompatibleProvider(preferences.base_url, secret or "local", preferences.strong_model)
     response = await provider.generate(ModelRequest(purpose="chat", system_instructions="You are Memento, a concise local personal agent. Be helpful and honest about available tools.", messages=[{"role": "user", "content": message}], max_output_tokens=1200))
     return response.text or "The provider returned an empty response."
 
