@@ -27,6 +27,7 @@
   },
   "bundle": {
     "active": true,
+    "resources": ["../agentd.exe"],
     "targets": ["nsis"],
     "windows": { "nsis": { "displayLanguageSelector": false } }
   }

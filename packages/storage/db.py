@@ -90,7 +90,7 @@ class AgentSettingsRow(Base):
     fast_model: Mapped[str] = mapped_column(String(120), default="grok-4.1-fast")
     balanced_model: Mapped[str] = mapped_column(String(120), default="grok-4.1-fast")
     strong_model: Mapped[str] = mapped_column(String(120), default="grok-4.6")
-    tools_json: Mapped[dict] = mapped_column(JSON, default=lambda: {"reminders": True, "tasks": True, "research": False, "memory": False})
+    tools_json: Mapped[dict] = mapped_column(JSON, default=lambda: {"reminders": True, "tasks": True, "research": False, "memory": False, "external_requests": False})
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
 

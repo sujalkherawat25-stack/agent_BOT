@@ -8,13 +8,17 @@ This Tauri 2 application is the lightweight Windows desktop shell for the Person
 
 ## Develop
 
-Start the API first (`docker compose up -d` from the repository root), then:
+The desktop shell starts the local runtime automatically:
 
 ```powershell
 cd apps/desktop
 npm install
 npm run dev
 ```
+
+Tauri invokes `apps/agentd/agentd.py` on `127.0.0.1:8765` during development.
+The runtime uses SQLite in `%LOCALAPPDATA%\Memento`. Docker Compose is only for
+the browser/server deployment path.
 
 ## Build the installer
 

@@ -5,6 +5,7 @@ asyncpg==0.31.0
 aiosqlite==0.21.0
 pydantic-settings==2.10.1
 httpx==0.28.1
+keyring==25.6.0
 python-dateutil==2.9.0.post0
 tzdata==2025.2
 pytest==8.4.1

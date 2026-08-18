@@ -7,17 +7,30 @@ An evidence-first, safety-gated personal AI agent. This repository implements th
 - FastAPI API with health, conversations, chat/SSE events, tasks, reminders, runs, approvals, and memory routes.
 - Durable Postgres models for users, conversations, messages, runs, reminders, tasks, audit events, and approvals.
 - Deterministic reminder intent parsing, timezone-aware scheduling, idempotency, postcondition verification, and user-legible SSE activity.
-- Provider-neutral model boundary plus an xAI Responses API adapter. The reminder path remains usable without an API key.
+- Provider-neutral model boundary plus OpenAI-compatible and xAI adapters. Provider requests are blocked until explicitly enabled in Settings.
 - Next.js workspace UI, Docker Compose, unit/integration tests, and GitHub Actions CI.
 
-## Run it
+## Run the desktop app (normal mode)
+
+The native app owns its local runtime. Docker is not required for desktop use.
+
+```powershell
+cd apps\desktop
+npm install
+npm run dev
+```
+
+For the packaged executable, open `apps\desktop\Memento.exe`. The shell starts
+`agentd` on `127.0.0.1:8765`; its SQLite data lives under `%LOCALAPPDATA%\Memento`.
+
+## Run the server/browser mode
 
 ```powershell
 Copy-Item .env.example .env
 docker compose up --build
 ```
 
-Open http://localhost:3000 for the browser preview, or use the lightweight native control app in `apps/desktop`. The API docs are at http://localhost:8000/docs.
+Open http://localhost:3000 for the browser preview. The API docs are at http://localhost:8000/docs.
 
 To use xAI, add `XAI_API_KEY` to `.env`; provider calls remain isolated in `packages/models/`.
 
@@ -25,7 +38,7 @@ To use xAI, add `XAI_API_KEY` to `.env`; provider calls remain isolated in `pack
 
 `apps/api` is the HTTP boundary. `packages/agent_core` owns routing and execution, `packages/harnesses/productivity` owns deterministic productivity intent and mutations, `packages/models` owns provider adapters, and `packages/storage` owns operational state. Semantic memory is deliberately not used as task/reminder state.
 
-`apps/desktop` is a Tauri 2 Windows shell: it uses the system WebView rather than Electron, presents a Codex-style workspace, and keeps provider secrets in Windows Credential Manager.
+`apps/desktop` is a Tauri 2 Windows shell: it uses the system WebView rather than Electron, starts the local `apps/agentd` runtime, and keeps provider secrets in Windows Credential Manager.
 
 ## Next slices
 

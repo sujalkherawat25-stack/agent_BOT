@@ -12,6 +12,9 @@ from agent_core.router import route
 from agent_core.schemas import AgentSettingsRequest, AgentSettingsView, ChatMessageRequest, CreateReminderRequest, ReminderView
 from harnesses.productivity.intent import parse_reminder
 from harnesses.productivity.service import create_and_verify_reminder
+from models.base import ModelRequest
+from models.openai_compatible import OpenAICompatibleProvider
+from models.secrets import provider_secret
 from storage.db import AgentRunRow, AgentSettingsRow, AuditEventRow, ConversationRow, MessageRow, ReminderRow, UserRow, session
 
 router = APIRouter()
@@ -62,6 +65,17 @@ async def put_settings(request: AgentSettingsRequest, user_id: str, timezone_nam
     return settings_view(value)
 
 
+async def model_answer(message: str, preferences: AgentSettingsRow | None) -> str:
+    if preferences is None or not preferences.tools_json.get("external_requests", False):
+        return "External provider requests are disabled. Enable that permission in Settings before using an LLM API."
+    secret = provider_secret(preferences.provider)
+    if not secret and preferences.provider not in {"local", "ollama"}:
+        return "No API key is configured for this provider. Add it in Settings, then try again."
+    provider = OpenAICompatibleProvider(preferences.base_url, secret or "local", preferences.strong_model)
+    response = await provider.generate(ModelRequest(purpose="chat", system_instructions="You are Memento, a concise local personal agent. Be helpful and honest about available tools.", messages=[{"role": "user", "content": message}], max_output_tokens=1200))
+    return response.text or "The provider returned an empty response."
+
+
 @router.post("/chat/messages")
 async def post_message(request: ChatMessageRequest, db: AsyncSession = Depends(session)):
     user = await user_for(db, request.user_id, request.timezone)
@@ -97,7 +111,10 @@ async def post_message(request: ChatMessageRequest, db: AsyncSession = Depends(s
             await db.commit()
             events.extend([( "run.failed", {"status": "failed", "label": str(error)}), ("token", {"text": str(error)})])
     else:
-        answer = "This first vertical slice currently supports reminder creation. Try: ‘Remind me tomorrow at 9 AM to send the report.’"
+        try:
+            answer = await model_answer(request.message, preferences)
+        except Exception as error:
+            answer = f"The configured provider could not answer: {error}"
         run.status, run.completed_at = "completed", datetime.now(timezone.utc)
         db.add(MessageRow(conversation_id=conversation.id, role="assistant", content=answer))
         await db.commit()

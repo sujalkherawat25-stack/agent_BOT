@@ -14,6 +14,8 @@ The attached implementation specification is the architectural contract. It expl
 - `apps/desktop` is a Tauri 2 Windows app, using the system WebView rather than an Electron-bundled Chromium runtime.
 - Its Codex-style workspace includes chat, tools, research/task placeholders, runtime state, and a full settings screen for local API endpoint, provider, model profiles, and tool enablement.
 - Non-secret settings persist in the local API. API keys stay out of the database and browser storage; the native app writes them to Windows Credential Manager.
+- The desktop now starts and owns a local `agentd` process on `127.0.0.1:8765`; Docker is optional server/development infrastructure rather than a desktop startup dependency.
+- Provider calls use the configured OpenAI-compatible endpoint and require the explicit `external_requests` permission in Settings.
 
 ## Deliberately deferred
 

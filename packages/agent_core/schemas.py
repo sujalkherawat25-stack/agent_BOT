@@ -50,7 +50,7 @@ class AgentSettingsRequest(BaseModel):
     fast_model: str = Field(default="grok-4.1-fast", min_length=1, max_length=120)
     balanced_model: str = Field(default="grok-4.1-fast", min_length=1, max_length=120)
     strong_model: str = Field(default="grok-4.6", min_length=1, max_length=120)
-    tools: dict[str, bool] = Field(default_factory=lambda: {"reminders": True, "tasks": True, "research": False, "memory": False})
+    tools: dict[str, bool] = Field(default_factory=lambda: {"reminders": True, "tasks": True, "research": False, "memory": False, "external_requests": False})
 
 
 class AgentSettingsView(AgentSettingsRequest):
