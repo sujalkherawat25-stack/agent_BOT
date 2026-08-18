@@ -1,0 +1,30 @@
+/* The earlier browser prototype used broad global selectors. Keep their scope
+   out of the desktop shell so controls cannot inherit page-layout rules. */
+.desktop-shell { grid-template-columns: 220px minmax(0, 1fr); overflow: hidden; }
+.desktop-shell .main { max-width: none; width: auto; min-width: 0; min-height: 100vh; padding: 0; justify-self: stretch; display: flex; }
+.desktop-shell .main > header { width: 100%; padding: 0 clamp(18px, 3vw, 36px); }
+.desktop-shell .window { display: none; }
+.desktop-shell .environment { display: none; }
+.desktop-shell .chat { width: min(100%, 860px); max-width: 860px; padding: clamp(32px, 7vh, 72px) clamp(20px, 6vw, 64px) 28px; }
+.desktop-shell .messages { min-height: 260px; align-content: start; }
+.desktop-shell .messages article { padding: 0; border: 0; background: transparent; }
+.desktop-shell .messages article.user > div { padding: 10px 13px; background: #303036; border-radius: 10px; }
+.desktop-shell .settings, .desktop-shell .content { max-width: 1100px; width: min(100%, 1100px); padding: clamp(28px, 6vw, 58px) clamp(20px, 5vw, 54px) 60px; }
+.desktop-shell .settings form { width: 100%; display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.35fr); gap: 14px; padding: 0; border: 0; border-radius: 0; background: transparent; }
+.desktop-shell .settings .card { min-width: 0; margin: 0; background: #202023; }
+.desktop-shell .settings form .card:nth-child(3), .desktop-shell .settings .save { grid-column: 1 / -1; }
+.desktop-shell .settings .grid { min-width: 0; }
+.desktop-shell .settings .secret { min-width: 0; }
+.desktop-shell .settings .secret input { min-width: 0; }
+.desktop-shell .settings .save { position: static; }
+@media (max-width: 980px) { .desktop-shell { grid-template-columns: 210px minmax(0, 1fr); } }
+@media (max-width: 760px) {
+  .desktop-shell { grid-template-columns: 1fr; overflow: visible; }
+  .desktop-shell .side { min-height: auto; flex-direction: row; align-items: center; flex-wrap: wrap; }
+  .desktop-shell .side nav { display: flex; order: 3; width: 100%; overflow: auto; }
+  .desktop-shell .side nav button { width: auto; white-space: nowrap; }
+  .desktop-shell .side-foot { display: none; }
+  .desktop-shell .settings form { grid-template-columns: 1fr; }
+  .desktop-shell .settings form .card:nth-child(3), .desktop-shell .settings .save { grid-column: auto; }
+  .desktop-shell .settings .secret, .desktop-shell .settings .grid, .desktop-shell .settings .toggles { grid-template-columns: 1fr; }
+}
